@@ -14,9 +14,10 @@ Corosync/Pacemaker cluster with a quorum device. It is a cut-down CR08 topology
 The router (10.10.10.1, 10.10.20.1) gives the nodes internet access. Per sandbox that is
 6 vCPU, 12 GB RAM and 60 GB disk for the hosts, against 22 vCPU, 32 GB and 310 GB for CR08.
 
-Names, addresses and network layout match CR08 because the lab text and the grading key
-use them. The networks are defined the same way as in CR08, where the floating
-addresses 10.10.10.70 and 10.10.10.71 (Pacemaker `IPaddr2`) were reachable from lin3.
+Addresses and network layout match CR08 because the lab text and the grading key use
+them. lin3 is CR08's lin4, renamed for Lab03. The networks are defined the same way as in
+CR08, where the floating addresses 10.10.10.70 and 10.10.10.71 (Pacemaker `IPaddr2`) were
+reachable from lin4.
 
 ## Provisioning
 
