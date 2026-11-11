@@ -14,7 +14,7 @@ hosts:
       mgmt_user: ubuntu
       mgmt_protocol: ssh
     hidden: false
-  - name: lin4
+  - name: lin3
     flavor: c2_r4_d20
     base_box:
       image: ubuntu-noble-x86_64
@@ -54,7 +54,7 @@ net_mappings:
   - host: lin2
     network: cluster-switch
     ip: 10.10.20.7
-  - host: lin4
+  - host: lin3
     network: access-switch
     ip: 10.10.10.9
 router_mappings:
@@ -73,4 +73,4 @@ groups:
     nodes:
       - lin1
       - lin2
-      - lin4
+      - lin3
