@@ -1,0 +1,5 @@
+linux_ha_cluster_hosts:
+  - name: lin1
+    ip: 10.10.20.6
+  - name: lin2
+    ip: 10.10.20.7

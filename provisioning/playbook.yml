@@ -1,0 +1,67 @@
+- name: Configure the student account on every node
+  hosts: linux-nodes
+  become: true
+  roles:
+    - name: ansible-role-user-access
+      user_access_username: localuser
+      user_access_password: Password123!
+      user_access_sudo: True
+
+- name: Keep the nodes open for cluster traffic and reachable for apt
+  hosts: linux-nodes
+  become: true
+  tasks:
+    # Corosync knet (UDP 5405), pcsd (TCP 2224) and qnetd (TCP 5403) must pass
+    # between the nodes, so no host firewall may be active when students start.
+    - name: Check whether ufw is installed
+      ansible.builtin.stat:
+        path: /usr/sbin/ufw
+      register: ufw_bin
+    - name: Disable ufw
+      when: ufw_bin.stat.exists
+      ansible.builtin.command: ufw --force disable
+      changed_when: false
+    # Students install pacemaker, corosync, pcs, corosync-qdevice/qnetd and a web
+    # server from the Ubuntu mirrors through the router. Refreshing the index here
+    # fails the build early if a sandbox has no internet access.
+    - name: Refresh the apt index through the router
+      ansible.builtin.apt:
+        update_cache: true
+      register: apt_refresh
+      retries: 5
+      delay: 15
+      until: apt_refresh is succeeded
+    # The Lab03 failure tests drop traffic between the nodes with iptables.
+    - name: Ensure iptables is installed
+      ansible.builtin.apt:
+        name: iptables
+        state: present
+
+- name: Resolve lin1 and lin2 to their cluster-network addresses
+  hosts: linux-ha
+  become: true
+  tasks:
+    # cloud-init would otherwise rewrite /etc/hosts on every boot and put the
+    # node's own name back on 127.0.1.1, which corosync would then bind to.
+    - name: Stop cloud-init from managing /etc/hosts
+      ansible.builtin.copy:
+        dest: /etc/cloud/cloud.cfg.d/99-bcdr-hosts.cfg
+        mode: '0644'
+        content: |
+          manage_etc_hosts: false
+    - name: Remove loopback entries that carry a cluster node name
+      loop: '{{ linux_ha_cluster_hosts }}'
+      loop_control:
+        label: '{{ item.name }}'
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.\S+\s.*\b{{ item.name }}\b'
+        state: absent
+    - name: Add cluster-network host records
+      loop: '{{ linux_ha_cluster_hosts }}'
+      loop_control:
+        label: '{{ item.name }}'
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^\S+\s+{{ item.name }}$'
+        line: '{{ item.ip }} {{ item.name }}'

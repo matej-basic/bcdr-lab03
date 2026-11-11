@@ -1,0 +1,76 @@
+name: bcdr-lab03
+hosts:
+  - name: lin1
+    flavor: c2_r4_d20
+    base_box:
+      image: ubuntu-noble-x86_64
+      mgmt_user: ubuntu
+      mgmt_protocol: ssh
+    hidden: false
+  - name: lin2
+    flavor: c2_r4_d20
+    base_box:
+      image: ubuntu-noble-x86_64
+      mgmt_user: ubuntu
+      mgmt_protocol: ssh
+    hidden: false
+  - name: lin4
+    flavor: c2_r4_d20
+    base_box:
+      image: ubuntu-noble-x86_64
+      mgmt_user: ubuntu
+      mgmt_protocol: ssh
+    hidden: false
+routers:
+  - name: router
+    flavor: standard.small
+    base_box:
+      image: debian-12-x86_64
+      mgmt_user: debian
+      mgmt_protocol: ssh
+    hidden: false
+networks:
+  - name: access-switch
+    cidr: 10.10.10.0/24
+    accessible_by_user: true
+    hidden: false
+  - name: cluster-switch
+    cidr: 10.10.20.0/24
+    accessible_by_user: true
+    hidden: false
+wan:
+  name: wan
+  cidr: 10.10.100.0/24
+net_mappings:
+  - host: lin1
+    network: access-switch
+    ip: 10.10.10.6
+  - host: lin1
+    network: cluster-switch
+    ip: 10.10.20.6
+  - host: lin2
+    network: access-switch
+    ip: 10.10.10.7
+  - host: lin2
+    network: cluster-switch
+    ip: 10.10.20.7
+  - host: lin4
+    network: access-switch
+    ip: 10.10.10.9
+router_mappings:
+  - router: router
+    network: access-switch
+    ip: 10.10.10.1
+  - router: router
+    network: cluster-switch
+    ip: 10.10.20.1
+groups:
+  - name: linux-ha
+    nodes:
+      - lin1
+      - lin2
+  - name: linux-nodes
+    nodes:
+      - lin1
+      - lin2
+      - lin4
